@@ -263,7 +263,6 @@ plist_t *wait_syscall(plist_t **list, plist_t *cpid){
     int status, event;
     pidinfo_t *info;
     pid_t pid;
-    long npid;
 
     while(*list){
         if(cpid)
@@ -275,8 +274,10 @@ plist_t *wait_syscall(plist_t **list, plist_t *cpid){
 
         cpid = plist_search(*list, pid);
         if(cpid == NULL){
-            debug("[warning] pid %d not found\n", pid);
-            continue;
+            debug("new pid [%d] attached\n", pid);
+            cpid = plist_insert(list, pid);
+
+            /* should I use PTRACE_SETOPTIONS ? */
         }
 
         info = &(cpid->info);
@@ -305,6 +306,7 @@ plist_t *wait_syscall(plist_t **list, plist_t *cpid){
         else if(WIFSIGNALED(status)){
             debug("[%d] +++ terminated with signal %d +++\n", pid, WTERMSIG(status));
             plist_delete(list, pid);
+            cpid = NULL;
 
             continue;
         }
@@ -312,6 +314,7 @@ plist_t *wait_syscall(plist_t **list, plist_t *cpid){
         else if(WIFEXITED(status)){
             debug("[%d] +++ exited with status %d +++\n", pid, WEXITSTATUS(status));
             plist_delete(list, pid);
+            cpid = NULL;
 
             continue;
         }
@@ -332,16 +335,6 @@ plist_t *wait_syscall(plist_t **list, plist_t *cpid){
         debug("event: %d (%s), sig: %d\n", event, ptrace_str_event(event), info->sig);
 
         switch(event){
-            case PTRACE_EVENT_FORK:
-            case PTRACE_EVENT_CLONE:
-            case PTRACE_EVENT_VFORK:
-                ptrace(PTRACE_GETEVENTMSG, pid, 0, &npid);
-                debug("[%d] new pid: %d\n", pid, (pid_t)npid);
-
-                info->sig = 0;
-                plist_insert(list, npid);
-                break;
-
             case PTRACE_EVENT_STOP:
                 switch(info->sig){
                     case SIGSTOP:
