@@ -57,7 +57,10 @@ enum {
     SHOPT_PTRACE_OPTS,
 
     /* print some information */
-    SHOPT_VERBOSE
+    SHOPT_VERBOSE,
+
+    /* follow fork, vfork and clone */
+    SHOPT_FOLLOW_ALL
 };
 
 enum {

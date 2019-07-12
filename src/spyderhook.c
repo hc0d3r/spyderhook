@@ -35,6 +35,7 @@ struct event_desc {
     char *desc;
 };
 
+static long attach_opts = default_opts;
 static int verbose;
 
 static int execve_attach(spyderhook_t *hook);
@@ -129,6 +130,11 @@ int sh_setopt(spyderhook_t *hook, int opt, ...){
             verbose = 1;
             break;
 
+        case SHOPT_FOLLOW_ALL:
+            attach_opts |= PTRACE_O_TRACECLONE|
+                PTRACE_O_TRACEFORK|PTRACE_O_TRACEVFORK;
+            break;
+
         default:
             va_end(ap);
             return 1;
@@ -195,7 +201,7 @@ int sh_mainloop(spyderhook_t *hook){
     debug("attaching pid: %d\n", pid);
 
     /* setting some ptrace options */
-    if(ptrace_seize(pid, default_opts|hook->ptrace_opts)){
+    if(ptrace_seize(pid, attach_opts|hook->ptrace_opts)){
         debug("failed to attach: %s\n", strerror(errno));
         return SH_ATTACH_PID_ERROR;
     }
