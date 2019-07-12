@@ -91,6 +91,8 @@ const char *sh_strerror(int err){
 
 int sh_setopt(spyderhook_t *hook, int opt, ...){
     va_list ap;
+    int flag;
+
     va_start(ap, opt);
 
     switch(opt){
@@ -127,11 +129,14 @@ int sh_setopt(spyderhook_t *hook, int opt, ...){
             break;
 
         case SHOPT_VERBOSE:
-            verbose = 1;
+            flag = va_arg(ap, int);
+            verbose = (flag) ? 1 : 0;
             break;
 
         case SHOPT_FOLLOW_ALL:
-            attach_opts |= PTRACE_O_TRACECLONE|
+            flag = va_arg(ap, int);
+            if(flag)
+                attach_opts |= PTRACE_O_TRACECLONE|
                 PTRACE_O_TRACEFORK|PTRACE_O_TRACEVFORK;
             break;
 
