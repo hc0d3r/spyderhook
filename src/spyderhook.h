@@ -78,10 +78,19 @@ enum {
 };
 
 enum {
+    /* no errors */
     SH_SUCCESS,
+
+    /* missing pid or filename to exec */
     SH_MISSING_OPT,
+
+    /* pid and filename are set */
     SH_ATTACH_CONFLICT,
+
+    /* failed to attach the pid */
     SH_ATTACH_PID_ERROR,
+
+    /* fork failed */
     SH_FORK_ERROR
 };
 
